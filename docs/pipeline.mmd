@@ -1,0 +1,17 @@
+flowchart TB
+    A["Amazon Reviews (raw CSV)"]
+    B["ETL & Feature Engineering (Spark)"]
+    C["ALS Model (Spark MLlib)"]
+    D["Deep Model (NCF / Two-Tower)"]
+    E["Evaluation (Precision@K, NDCG)"]
+    F["Model Registry (MLflow)"]
+    G["Serving API (FastAPI)"]
+    H["UI (Streamlit / Gradio)"]
+
+    A --> B
+    B --> C
+    B --> D
+    C & D --> E
+    E --> F
+    F --> G
+    G --> H

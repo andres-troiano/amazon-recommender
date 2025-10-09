@@ -4,16 +4,8 @@ An end-to-end recommender system built on the Amazon Product Reviews dataset (El
 
 ## Architecture Overview
 
-```mermaid
-flowchart LR
-    A[Amazon Reviews (raw CSV)] --> B[ETL & Feature Engineering (Spark)]
-    B --> C[ALS Model (Spark MLlib)]
-    B --> D[Deep Model (NCF / Two-Tower)]
-    C & D --> E[Evaluation (Precision@K, NDCG)]
-    E --> F[Model Registry (MLflow)]
-    F --> G[Serving API (FastAPI)]
-    G --> H[UI (Streamlit / Gradio)]
-```
+<img src="docs/pipeline.svg" width="500"/>
+> Diagram source: [docs/pipeline.mmd](docs/pipeline.mmd)
 
 ## Repository Layout
 
