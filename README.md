@@ -5,7 +5,7 @@ An end-to-end recommender system built on the Amazon Product Reviews dataset (El
 ## Architecture Overview
 
 <img src="docs/pipeline.svg" width="500"/>
-> Diagram source: [docs/pipeline.mmd](docs/pipeline.mmd)
+Diagram source: [docs/pipeline.mmd](docs/pipeline.mmd)
 
 ## Repository Layout
 
