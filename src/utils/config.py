@@ -41,6 +41,8 @@ class Config:
     mlflow_tracking_uri: str
     log_level: str
     environment: str
+    raw_reviews_path: Path
+    min_interactions: int
 
 
 def _resolve_project_root() -> Path:
@@ -81,6 +83,10 @@ def get_config(env_file: Optional[Path] = None) -> Config:
     mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "file:./mlruns")
     log_level = os.getenv("LOG_LEVEL", "INFO")
     environment = os.getenv("ENVIRONMENT", "local")
+    raw_reviews_path = Path(
+        os.getenv("RAW_REVIEWS_PATH", str(project_root / "data/raw/reviews_electronics.csv"))
+    )
+    min_interactions = int(os.getenv("MIN_INTERACTIONS", "5"))
 
     return Config(
         project_root=project_root,
@@ -89,6 +95,8 @@ def get_config(env_file: Optional[Path] = None) -> Config:
         mlflow_tracking_uri=mlflow_tracking_uri,
         log_level=log_level,
         environment=environment,
+        raw_reviews_path=raw_reviews_path,
+        min_interactions=min_interactions,
     )
 
 

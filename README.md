@@ -50,7 +50,7 @@ docker exec -it amazon-recommender-app bash
 
 ### Local (No Docker)
 ```bash
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -58,11 +58,11 @@ pip install -r requirements.txt
 ## Pipeline CLI
 
 ```bash
-python3 src/pipeline.py --help
-python3 src/pipeline.py etl
-python3 src/pipeline.py train
-python3 src/pipeline.py eval
-python3 src/pipeline.py deploy
+python src/pipeline.py --help
+python src/pipeline.py etl
+python src/pipeline.py train
+python src/pipeline.py eval
+python src/pipeline.py deploy
 ```
 
 Each command is a placeholder in Stage 1.
