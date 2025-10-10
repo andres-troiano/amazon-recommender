@@ -73,19 +73,19 @@ The `etl` command is implemented in Stage 2. Other commands are placeholders for
 
 ### ETL (Stage 2)
 
-Inputs (CSV/TSV with header): must contain columns equivalent to `user_id`, `item_id`, `rating`.
+Inputs (CSV/TSV/JSON/JSON.GZ): must contain fields equivalent to `user_id`, `item_id`, `rating`.
 
 Run with Docker:
 ```bash
 docker exec -it amazon-recommender-app \
   python src/pipeline.py etl \
-  --input data/raw/reviews_electronics.csv \
+  --input data/raw/reviews_electronics.json.gz \
   --min-interactions 5
 ```
 
 Run locally (no Docker):
 ```bash
-python src/pipeline.py etl --input data/raw/reviews_electronics.csv --min-interactions 5
+python src/pipeline.py etl --input data/raw/reviews_electronics.json.gz --min-interactions 5
 ```
 
 Outputs are written to `data/processed/`:
@@ -107,7 +107,8 @@ Saved popularity table to: data/processed/popular_items.parquet
 - `src/utils/logging.py` sets up a project-wide Loguru logger.
 
 Key variables (with defaults):
-- `RAW_REVIEWS_PATH`: `data/raw/reviews_electronics.csv`
+- `RAW_REVIEWS_PATH`: `data/raw/reviews_electronics.json.gz`
+- `RAW_REVIEWS_URL`: `https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Electronics_5.json.gz`
 - `MIN_INTERACTIONS`: `5`
 - `LOG_LEVEL`: `INFO`
 - `ENVIRONMENT`: `local`

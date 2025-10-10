@@ -43,6 +43,7 @@ class Config:
     environment: str
     raw_reviews_path: Path
     min_interactions: int
+    raw_reviews_url: str
 
 
 def _resolve_project_root() -> Path:
@@ -84,9 +85,13 @@ def get_config(env_file: Optional[Path] = None) -> Config:
     log_level = os.getenv("LOG_LEVEL", "INFO")
     environment = os.getenv("ENVIRONMENT", "local")
     raw_reviews_path = Path(
-        os.getenv("RAW_REVIEWS_PATH", str(project_root / "data/raw/reviews_electronics.csv"))
+        os.getenv("RAW_REVIEWS_PATH", str(project_root / "data/raw/reviews_electronics.json.gz"))
     )
     min_interactions = int(os.getenv("MIN_INTERACTIONS", "5"))
+    raw_reviews_url = os.getenv(
+        "RAW_REVIEWS_URL",
+        "https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Electronics_5.json.gz",
+    )
 
     return Config(
         project_root=project_root,
@@ -97,6 +102,7 @@ def get_config(env_file: Optional[Path] = None) -> Config:
         environment=environment,
         raw_reviews_path=raw_reviews_path,
         min_interactions=min_interactions,
+        raw_reviews_url=raw_reviews_url,
     )
 
 

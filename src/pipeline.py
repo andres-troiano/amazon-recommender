@@ -1,16 +1,18 @@
 """Command-line interface for orchestrating the project workflow.
 
-This CLI intentionally provides only stubbed subcommands for Stage 1.
-Future stages will implement ETL, model training, evaluation, and deployment.
+Stage 2: ETL is implemented (PySpark preprocessing and popularity stats).
+Subcommands for training/evaluation/deployment remain placeholders for now.
 """
 
 from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
 from utils.config import get_config
 from utils.logging import setup_logging, logger
+from utils.data import download_file
 from etl.spark_preprocess import preprocess_reviews
 from etl.feature_engineering import compute_popularity, save_popularity
 
@@ -38,7 +40,7 @@ def _handle_deploy(_: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Amazon Recommender System — pipeline orchestrator (Stage 1 skeleton)"
+            "Amazon Recommender System — pipeline orchestrator (Stage 2: ETL ready)"
         )
     )
 
@@ -85,6 +87,13 @@ def main(argv: list[str] | None = None) -> int:
         min_interactions = (
             args.min_interactions if args.min_interactions is not None else cfg.min_interactions
         )
+
+        # Auto-download dataset if not present locally
+        if not input_path.exists():
+            logger.info(
+                f"Input file not found at {input_path}. Attempting download from configured URL."
+            )
+            download_file(cfg.raw_reviews_url, input_path)
 
         logger.info(
             f"Starting ETL with input={input_path}, min_interactions={min_interactions}"

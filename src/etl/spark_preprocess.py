@@ -47,6 +47,9 @@ def _read_reviews(spark: SparkSession, input_path: Path) -> DataFrame:
             .option("sep", "\t")
             .csv(path_str)
         )
+    elif path_str.endswith(".json") or path_str.endswith(".json.gz"):
+        # Amazon review files are often JSON lines, sometimes gzipped
+        df = spark.read.json(path_str)
     else:
         df = (
             spark.read.option("header", True)

@@ -10,6 +10,25 @@ services:
       - ./:/app
     command: tail -f /dev/null
     environment:
-      - PYTHONDONTWRITEBYTECODE=1
-      - PYTHONUNBUFFERED=1
-    # Network can be extended later for databases/caches
+      # --- Python runtime ---
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+
+      # --- Java (required by PySpark) ---
+      JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
+      PATH: "/usr/lib/jvm/java-21-openjdk-amd64/bin:/usr/local/bin:/usr/bin:/bin"
+
+      # --- Spark runtime ---
+      PYSPARK_PYTHON: python
+      PYSPARK_DRIVER_PYTHON: python
+
+      # Optional performance tweaks
+      SPARK_DRIVER_MEMORY: 2g
+      SPARK_EXECUTOR_MEMORY: 2g
+
+      # Optional: cleaner Spark logs
+      PYSPARK_SUBMIT_ARGS: "--conf spark.ui.showConsoleProgress=false pyspark-shell"
+
+    # Optional network placeholder for future DB/cache services
+    # networks:
+    #   - app-network
