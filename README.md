@@ -1,6 +1,10 @@
 # Amazon Product Recommender System
 
-An end-to-end recommender system built on the Amazon Product Reviews dataset (Electronics subset). This repository currently contains the Stage 1 scaffold: project structure, environment, and CLI skeleton. Modeling and API serving will be implemented in subsequent stages.
+An end-to-end recommender system built on the Amazon Product Reviews dataset (Electronics subset).
+
+- Stage 1: scaffold, environment, and CLI skeleton — ✅ completed
+- Stage 2: PySpark ETL with popularity stats — ✅ completed
+- Next stages: modeling, evaluation, serving, and demo UI
 
 ## Architecture Overview
 
@@ -59,25 +63,61 @@ pip install -r requirements.txt
 
 ```bash
 python src/pipeline.py --help
-python src/pipeline.py etl
+python src/pipeline.py etl [--input PATH] [--min-interactions N]
 python src/pipeline.py train
 python src/pipeline.py eval
 python src/pipeline.py deploy
 ```
 
-Each command is a placeholder in Stage 1.
+The `etl` command is implemented in Stage 2. Other commands are placeholders for now.
+
+### ETL (Stage 2)
+
+Inputs (CSV/TSV with header): must contain columns equivalent to `user_id`, `item_id`, `rating`.
+
+Run with Docker:
+```bash
+docker exec -it amazon-recommender-app \
+  python src/pipeline.py etl \
+  --input data/raw/reviews_electronics.csv \
+  --min-interactions 5
+```
+
+Run locally (no Docker):
+```bash
+python src/pipeline.py etl --input data/raw/reviews_electronics.csv --min-interactions 5
+```
+
+Outputs are written to `data/processed/`:
+- `interactions.parquet` — columns: `user_idx`, `item_idx`, `rating`
+- `user_map.parquet` — columns: `user_idx`, `user_id`
+- `item_map.parquet` — columns: `item_idx`, `item_id`
+- `popular_items.parquet` — columns: `item_idx` or `item_id`, `count_ratings`, `avg_rating`
+
+Example log on success:
+```
+✅ Processed X rows → Y users × Z items
+Saved popularity table to: data/processed/popular_items.parquet
+```
 
 ## Configuration & Logging
 - Environment variables can be set in a `.env` at repo root.
+- An example file is provided: `.env.example` (copy to `.env`).
 - `src/utils/config.py` loads configuration and common paths.
 - `src/utils/logging.py` sets up a project-wide Loguru logger.
 
+Key variables (with defaults):
+- `RAW_REVIEWS_PATH`: `data/raw/reviews_electronics.csv`
+- `MIN_INTERACTIONS`: `5`
+- `LOG_LEVEL`: `INFO`
+- `ENVIRONMENT`: `local`
+- `MLFLOW_TRACKING_URI`: `file:./mlruns`
+
 ## Roadmap
-1. ETL & Feature Engineering with PySpark
-2. Model Training: ALS (Spark) and NCF (PyTorch)
-3. Evaluation & MLflow tracking
-4. Serving API with FastAPI + Docker
-5. Optional Streamlit/Gradio demo and cold-start strategies
+1. Model Training: ALS (Spark) and NCF (PyTorch)
+2. Evaluation & MLflow tracking
+3. Serving API with FastAPI + Docker
+4. Optional Streamlit/Gradio demo and cold-start strategies
 
 ## License
 This project is for educational and portfolio demonstration purposes.
