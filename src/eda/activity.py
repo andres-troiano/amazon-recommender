@@ -13,7 +13,7 @@ from pyspark.sql import functions as F
 def user_activity(df: DataFrame) -> DataFrame:
     """Return per-user counts of ratings."""
     logger.info("Computing user activity counts")
-    return df.groupBy("user_id").agg(F.count("item_id").alias("num_ratings")).orderBy(
+    return df.groupBy("user_idx").agg(F.count("item_idx").alias("num_ratings")).orderBy(
         F.col("num_ratings").desc()
     )
 
@@ -21,7 +21,7 @@ def user_activity(df: DataFrame) -> DataFrame:
 def item_popularity(df: DataFrame) -> DataFrame:
     """Return per-item counts of ratings."""
     logger.info("Computing item popularity counts")
-    return df.groupBy("item_id").agg(F.count("user_id").alias("num_ratings")).orderBy(
+    return df.groupBy("item_idx").agg(F.count("user_idx").alias("num_ratings")).orderBy(
         F.col("num_ratings").desc()
     )
 

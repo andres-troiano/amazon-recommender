@@ -12,12 +12,12 @@ from pyspark.sql import functions as F
 def basic_stats(df: DataFrame) -> Dict[str, float]:
     """Compute basic counts and sparsity for a ratings dataset.
 
-    Expected columns: user_id, item_id, rating
+    Expected columns: user_idx, item_idx, rating
     """
     logger.info("Computing basic stats")
     num_rows = df.count()
-    num_users = df.select("user_id").distinct().count()
-    num_items = df.select("item_id").distinct().count()
+    num_users = df.select("user_idx").distinct().count()
+    num_items = df.select("item_idx").distinct().count()
     sparsity = 1.0 - min(1.0, num_rows / float(max(1, num_users * num_items)))
     return {
         "num_rows": float(num_rows),

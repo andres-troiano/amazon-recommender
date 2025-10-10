@@ -10,6 +10,8 @@ WORKDIR /app
 # Add Java (required for Spark) + common build tools + git
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    bash \
+    coreutils \
     git \
     openjdk-21-jre-headless \
     && apt-get clean \
@@ -23,6 +25,9 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 COPY requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
+
+# Register Jupyter kernel so VS Code auto-detects it
+RUN python -m ipykernel install --name amazon-recommender --display-name "Amazon Recommender (Docker)"
 
 # --- Copy project source ---
 COPY src /app/src
