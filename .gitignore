@@ -51,3 +51,5 @@ artifacts/**
 
 # Docker compose overrides (local only)
 docker-compose.override.yml
+
+stage*.md
