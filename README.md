@@ -1,4 +1,4 @@
-# Amazon Product Recommender System (Scaffold)
+# Amazon Product Recommender System
 
 An end-to-end recommender system built on the Amazon Product Reviews dataset (Electronics subset). This repository currently contains the Stage 1 scaffold: project structure, environment, and CLI skeleton. Modeling and API serving will be implemented in subsequent stages.
 
@@ -42,8 +42,8 @@ amazon-recommender/
 
 ### Quickstart (Docker)
 ```bash
-docker-compose build
-docker-compose up -d
+docker compose build
+docker compose up -d
 # Exec into container if needed
 docker exec -it amazon-recommender-app bash
 ```

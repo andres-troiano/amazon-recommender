@@ -3,7 +3,7 @@ fastapi==0.118.2
 uvicorn==0.37.0
 mlflow==3.4.0
 pandas==2.3.3
-numpy==2.3.3
+numpy==2.2.6
 scikit-learn==1.7.2
 torch==2.8.0
 matplotlib==3.10.7
