@@ -15,6 +15,7 @@ from utils.logging import setup_logging, logger
 from utils.data import download_file
 from etl.spark_preprocess import preprocess_reviews
 from etl.feature_engineering import compute_popularity, save_popularity
+from models.als import train_als
 
 
 def _handle_etl(_: argparse.Namespace) -> int:
@@ -64,6 +65,13 @@ def build_parser() -> argparse.ArgumentParser:
     train_parser = subparsers.add_parser("train", help="Train recommendation models")
     train_parser.set_defaults(func=_handle_train)
 
+    train_als_parser = subparsers.add_parser("train_als", help="Train ALS model")
+    train_als_parser.add_argument("--rank", type=int, default=50)
+    train_als_parser.add_argument("--reg", type=float, default=0.1)
+    train_als_parser.add_argument("--alpha", type=float, default=1.0)
+    train_als_parser.add_argument("--maxiter", type=int, default=10)
+    train_als_parser.set_defaults(func=_handle_train)
+
     eval_parser = subparsers.add_parser("eval", help="Evaluate trained models")
     eval_parser.set_defaults(func=_handle_eval)
 
@@ -111,6 +119,30 @@ def main(argv: list[str] | None = None) -> int:
             popularity_df = compute_popularity(interactions_df)
             popular_path = save_popularity(popularity_df, cfg.data_processed_dir)
             logger.info(f"Saved popularity table to: {popular_path}")
+        finally:
+            spark.stop()
+
+        return 0
+
+    if args.command == "train_als":
+        from pyspark.sql import SparkSession
+
+        spark = SparkSession.builder.getOrCreate()
+        try:
+            interactions_path = cfg.data_processed_dir / "interactions.parquet"
+            interactions_df = spark.read.parquet(str(interactions_path))
+            result = train_als(
+                spark=spark,
+                interactions_df=interactions_df,
+                artifacts_dir=cfg.artifacts_dir,
+                rank=args.rank,
+                reg=args.reg,
+                alpha=args.alpha,
+                maxIter=args.maxiter,
+            )
+            logger.info(
+                f"✅ Trained ALS: RMSE={result.metrics['rmse']:.4f}, P@10={result.metrics['precision@k']:.4f}, NDCG@10={result.metrics['ndcg@k']:.4f}"
+            )
         finally:
             spark.stop()
 

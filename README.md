@@ -4,6 +4,7 @@ An end-to-end recommender system built on the Amazon Product Reviews dataset (El
 
 - Stage 1: scaffold, environment, and CLI skeleton — ✅ completed
 - Stage 2: PySpark ETL with popularity stats — ✅ completed
+- Stage 3: ALS modeling and evaluation — ✅ completed
 - Next stages: modeling, evaluation, serving, and demo UI
 
 ## Architecture Overview
@@ -67,11 +68,24 @@ Note: `requirements.txt` is configured with the CPU-only PyTorch wheel; no CUDA/
 python src/pipeline.py --help
 python src/pipeline.py etl [--input PATH] [--min-interactions N]
 python src/pipeline.py train
+python src/pipeline.py train_als [--rank 50 --reg 0.1 --alpha 1.0 --maxiter 10]
 python src/pipeline.py eval
 python src/pipeline.py deploy
 ```
 
 The `etl` command is implemented in Stage 2. Other commands are placeholders for now.
+
+### Model Training (Stage 3 — ALS)
+
+Run:
+```bash
+python src/pipeline.py train_als --rank 50 --reg 0.1 --alpha 1.0 --maxiter 10
+```
+
+Outputs:
+- `artifacts/als_model/` (Spark ALS model)
+- `artifacts/als_model/metadata.json` (params + metrics)
+- `artifacts/metrics/mlflow_run_id.txt` (if MLflow logging succeeds)
 
 ### ETL (Stage 2)
 
@@ -103,6 +117,19 @@ Saved popularity table to: data/processed/popular_items.parquet
 ```
 
 If the input file does not exist, the ETL will automatically download it from `RAW_REVIEWS_URL` into `RAW_REVIEWS_PATH`.
+
+### EDA (Notebooks & Utilities)
+
+- Example notebook: `notebooks/01_data_overview.ipynb`
+- Importable utilities under `src/eda/`:
+
+```python
+from src.eda.overview import basic_stats, rating_summary
+from src.eda.activity import plot_user_activity, plot_item_popularity
+from src.eda.ratings import plot_distribution
+```
+
+Note: Plotting uses matplotlib/seaborn; functions sample data to keep visuals responsive.
 
 ## Configuration & Logging
 - Environment variables can be set in a `.env` at repo root.

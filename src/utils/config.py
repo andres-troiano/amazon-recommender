@@ -44,6 +44,7 @@ class Config:
     raw_reviews_path: Path
     min_interactions: int
     raw_reviews_url: str
+    artifacts_dir: Path
 
 
 def _resolve_project_root() -> Path:
@@ -92,6 +93,7 @@ def get_config(env_file: Optional[Path] = None) -> Config:
         "RAW_REVIEWS_URL",
         "https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Electronics_5.json.gz",
     )
+    artifacts_dir = project_root / "artifacts"
 
     return Config(
         project_root=project_root,
@@ -103,6 +105,7 @@ def get_config(env_file: Optional[Path] = None) -> Config:
         raw_reviews_path=raw_reviews_path,
         min_interactions=min_interactions,
         raw_reviews_url=raw_reviews_url,
+        artifacts_dir=artifacts_dir,
     )
 
 
