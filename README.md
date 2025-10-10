@@ -59,6 +59,8 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Note: `requirements.txt` is configured with the CPU-only PyTorch wheel; no CUDA/GPU is required.
+
 ## Pipeline CLI
 
 ```bash
@@ -99,6 +101,8 @@ Example log on success:
 ✅ Processed X rows → Y users × Z items
 Saved popularity table to: data/processed/popular_items.parquet
 ```
+
+If the input file does not exist, the ETL will automatically download it from `RAW_REVIEWS_URL` into `RAW_REVIEWS_PATH`.
 
 ## Configuration & Logging
 - Environment variables can be set in a `.env` at repo root.
