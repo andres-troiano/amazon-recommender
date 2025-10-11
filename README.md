@@ -97,6 +97,20 @@ Outputs:
 - `artifacts/als_model/metadata.json` (params + metrics)
 - `artifacts/metrics/mlflow_run_id.txt` (if MLflow logging succeeds)
 
+#### MLflow UI
+
+Launch the UI locally to inspect runs (best + all grid candidates):
+
+```bash
+mlflow ui --backend-store-uri file:./mlruns --host 0.0.0.0 --port 5000
+# then open http://localhost:5000
+```
+
+Notes:
+- Tracking URI defaults to `file:./mlruns` unless overridden via `MLFLOW_TRACKING_URI`.
+- Experiment name: `ALS_Recommender`.
+- Each grid candidate is a nested run; the best run is tagged `best=true` and logs artifacts.
+
 ### ETL
 
 Inputs (CSV/TSV/JSON/JSON.GZ): must contain fields equivalent to `user_id`, `item_id`, `rating`.
