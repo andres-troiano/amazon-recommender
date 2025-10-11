@@ -102,7 +102,7 @@ Outputs:
 Launch the UI locally to inspect runs (best + all grid candidates):
 
 ```bash
-mlflow ui --backend-store-uri file:./mlruns --host 0.0.0.0 --port 5000
+mlflow ui --host 0.0.0.0 --port 5000 --backend-store-uri ./mlruns
 # then open http://localhost:5000
 ```
 

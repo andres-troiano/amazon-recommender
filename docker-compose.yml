@@ -9,6 +9,8 @@ services:
     volumes:
       - ./:/app
     command: tail -f /dev/null
+    ports:
+      - "5000:5000"
     environment:
       # --- Python runtime ---
       PYTHONDONTWRITEBYTECODE: 1
