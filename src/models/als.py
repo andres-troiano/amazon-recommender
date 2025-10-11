@@ -76,6 +76,7 @@ def train_als(
     best = None
     metrics_best = None
     params_best = None
+    grid_results: List[Dict] = []
 
     for params in param_grid:
         logger.info(f"Training ALS with params: {params}")
@@ -98,6 +99,23 @@ def train_als(
         logger.info(f"Validation RMSE={rmse:.4f} P@10={rank_metrics['precision@k']:.4f} NDCG@10={rank_metrics['ndcg@k']:.4f}")
 
         score = (rmse, -rank_metrics["precision@k"])  # primary: lower RMSE, then higher precision
+        # Track this candidate's results
+        candidate = {"params": params, "metrics": {"rmse": rmse, **rank_metrics}}
+        grid_results.append(candidate)
+        # Log candidate as nested MLflow run (if available)
+        try:
+            log_mlflow(
+                params={"model": "als", **params},
+                metrics=candidate["metrics"],
+                artifacts_dir=None,
+                tracking_uri=None,
+                experiment_name="ALS_Recommender",
+                run_name=f"candidate_rank={params['rank']}_reg={params['regParam']}",
+                tags={"candidate": "true"},
+                nested=True,
+            )
+        except Exception:  # noqa: BLE001
+            pass
         if best is None or score < best:
             best = score
             metrics_best = {"rmse": rmse, **rank_metrics}
@@ -115,6 +133,17 @@ def train_als(
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     metrics_path = metrics_dir / f"als_metrics_{timestamp}.json"
     save_json({"model": "als", "params": params_best, "metrics": metrics_best}, metrics_path)
+    grid_path = metrics_dir / f"als_grid_{timestamp}.json"
+    save_json(
+        {
+            "model": "als",
+            "k": 10,
+            "selection": "rmse_then_precision@k",
+            "grid_results": grid_results,
+            "best": {"params": params_best, "metrics": metrics_best},
+        },
+        grid_path,
+    )
 
     run_id = log_mlflow(
         params={"model": "als", **params_best},
@@ -122,6 +151,9 @@ def train_als(
         artifacts_dir=artifacts_dir,
         tracking_uri=None,  # falls back to env or file:./mlruns
         experiment_name="ALS_Recommender",
+        artifact_paths=[metrics_path, grid_path, model_dir / "metadata.json"],
+        run_name=f"best_rank={params_best['rank']}_reg={params_best['regParam']}",
+        tags={"best": "true"},
     )
     
     return AlsTrainingResult(model_path=model_dir, params=params_best, metrics=metrics_best, run_id=run_id)

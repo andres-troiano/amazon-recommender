@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Union
 import os
 import re
 
@@ -42,6 +42,10 @@ def log_mlflow(
     artifacts_dir: Optional[Path] = None,
     tracking_uri: Optional[str] = None,
     experiment_name: Optional[str] = None,
+    artifact_paths: Optional[List[Union[Path, str]]] = None,
+    run_name: Optional[str] = None,
+    tags: Optional[Dict[str, str]] = None,
+    nested: bool = False,
 ) -> Optional[str]:
     """Log params/metrics to MLflow, return run_id if successful.
 
@@ -66,12 +70,21 @@ def log_mlflow(
             name = name.replace("@", "_at_")
             return re.sub(r"[^A-Za-z0-9_\-\. :/]", "_", name)
 
-        with mlflow.start_run():
+        with mlflow.start_run(run_name=run_name, nested=nested):
             for k, v in params.items():
                 mlflow.log_param(_sanitize_mlflow_name(k), v)
             for k, v in metrics.items():
                 mlflow.log_metric(_sanitize_mlflow_name(k), float(v))
+            if tags:
+                for k, v in tags.items():
+                    mlflow.set_tag(k, v)
             run_id = mlflow.active_run().info.run_id
+            # Optionally log specific artifacts (files)
+            if artifact_paths:
+                for ap in artifact_paths:
+                    p = Path(ap)
+                    if p.exists():
+                        mlflow.log_artifact(str(p))
         logger.info(f"Logged MLflow run: {run_id}")
 
         if artifacts_dir:
