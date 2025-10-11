@@ -8,8 +8,9 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from loguru import logger
 from pyspark.ml.evaluation import RegressionEvaluator
@@ -18,7 +19,7 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 
 from .metrics import precision_at_k, ndcg_at_k
-from .utils import save_model, save_json
+from .utils import save_model, save_json, log_mlflow
 
 
 @dataclass
@@ -26,6 +27,7 @@ class AlsTrainingResult:
     model_path: Path
     params: Dict
     metrics: Dict
+    run_id: Optional[str] = None
 
 
 def _split_data(df: DataFrame, seed: int) -> tuple[DataFrame, DataFrame]:
@@ -108,7 +110,21 @@ def train_als(
     metadata = {"params": params_best, "metrics": metrics_best}
     save_json(metadata, model_dir / "metadata.json")
 
-    return AlsTrainingResult(model_path=model_dir, params=params_best, metrics=metrics_best)
+    # Persist metrics JSON and attempt MLflow logging
+    metrics_dir = artifacts_dir / "metrics"
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    metrics_path = metrics_dir / f"als_metrics_{timestamp}.json"
+    save_json({"model": "als", "params": params_best, "metrics": metrics_best}, metrics_path)
+
+    run_id = log_mlflow(
+        params={"model": "als", **params_best},
+        metrics=metrics_best,
+        artifacts_dir=artifacts_dir,
+        tracking_uri=None,  # falls back to env or file:./mlruns
+        experiment_name="ALS_Recommender",
+    )
+    
+    return AlsTrainingResult(model_path=model_dir, params=params_best, metrics=metrics_best, run_id=run_id)
 
 
 def recommend_for_user(model_path: Path, user_id: int, n: int = 10) -> List[Dict]:

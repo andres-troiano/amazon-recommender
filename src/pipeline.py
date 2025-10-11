@@ -70,6 +70,18 @@ def build_parser() -> argparse.ArgumentParser:
     train_als_parser.add_argument("--reg", type=float, default=0.1)
     train_als_parser.add_argument("--alpha", type=float, default=1.0)
     train_als_parser.add_argument("--maxiter", type=int, default=10)
+    train_als_parser.add_argument(
+        "--sample-fraction",
+        type=float,
+        default=1.0,
+        help="Optional fraction (0-1] to subsample interactions for faster dev",
+    )
+    train_als_parser.add_argument(
+        "--sample-seed",
+        type=int,
+        default=42,
+        help="Random seed used for subsampling",
+    )
     train_als_parser.set_defaults(func=_handle_train)
 
     eval_parser = subparsers.add_parser("eval", help="Evaluate trained models")
@@ -131,6 +143,11 @@ def main(argv: list[str] | None = None) -> int:
         try:
             interactions_path = cfg.data_processed_dir / "interactions.parquet"
             interactions_df = spark.read.parquet(str(interactions_path))
+            if 0.0 < getattr(args, "sample_fraction", 1.0) < 1.0:
+                frac = float(args.sample_fraction)
+                seed = int(args.sample_seed)
+                logger.info(f"Subsampling interactions with fraction={frac}, seed={seed}")
+                interactions_df = interactions_df.sample(withReplacement=False, fraction=frac, seed=seed)
             result = train_als(
                 spark=spark,
                 interactions_df=interactions_df,
@@ -143,6 +160,8 @@ def main(argv: list[str] | None = None) -> int:
             logger.info(
                 f"✅ Trained ALS: RMSE={result.metrics['rmse']:.4f}, P@10={result.metrics['precision@k']:.4f}, NDCG@10={result.metrics['ndcg@k']:.4f}"
             )
+            if result.run_id:
+                logger.info(f"MLflow run_id: {result.run_id}")
         finally:
             spark.stop()
 

@@ -76,7 +76,7 @@ Note: `requirements.txt` is configured with the CPU-only PyTorch wheel; no CUDA/
 python src/pipeline.py --help
 python src/pipeline.py etl [--input PATH] [--min-interactions N]
 python src/pipeline.py train
-python src/pipeline.py train_als [--rank 50 --reg 0.1 --alpha 1.0 --maxiter 10]
+python src/pipeline.py train_als [--rank 50 --reg 0.1 --alpha 1.0 --maxiter 10 --sample-fraction 0.2 --sample-seed 42]
 python src/pipeline.py eval
 python src/pipeline.py deploy
 ```
@@ -87,8 +87,10 @@ The `etl` command is implemented; other commands may still be placeholders.
 
 Run:
 ```bash
-python src/pipeline.py train_als --rank 50 --reg 0.1 --alpha 1.0 --maxiter 10
+python src/pipeline.py train_als --rank 50 --reg 0.1 --alpha 1.0 --maxiter 10 --sample-fraction 0.01
 ```
+
+Tip: Use `--sample-fraction <0-1]` to train quickly on a subset during development.
 
 Outputs:
 - `artifacts/als_model/` (Spark ALS model)
