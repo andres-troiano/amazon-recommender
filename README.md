@@ -274,6 +274,15 @@ The ALS recommender achieves consistent ranking performance across a wide range 
 For practical purposes, **`rank = 32` and `regParam ≈ 0.2–0.4`** provide an excellent balance between generalization and computational cost.
 These results establish a solid baseline to compare future models, such as neural collaborative filtering, within the same experimental framework.
 
+## Next Steps
+
+- **ALS Enhancements**: support for implicit feedback, cold-start mitigation, and hybrid reranking.
+- **Neural Recommenders**: 
+  - *Neural Collaborative Filtering (NCF)* and *Variational Autoencoders (VAE-CF)* for nonlinear user–item modeling.
+  - *Two-Tower architectures* for large-scale retrieval.
+  - *Sequential models* (RNN/Transformer-based) to capture temporal user behavior.
+- **Serving & Demo**: interactive API (FastAPI) and a simple web UI to showcase personalized recommendations.
+
 
 ## License
 This project is for educational and portfolio demonstration purposes.
