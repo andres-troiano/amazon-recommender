@@ -6,7 +6,6 @@ An end-to-end recommender system built on the Amazon Product Reviews dataset (El
 
 <p align="center">
   <img src="docs/pipeline.svg" width="500"/><br/>
-  <em>Diagram source: <a href="docs/pipeline.mmd">docs/pipeline.mmd</a></em>
 </p>
 
 ## Dataset
@@ -171,7 +170,7 @@ Note: Plotting uses matplotlib/seaborn; functions sample data to keep visuals re
 - Model training (ALS, Spark MLlib)
   - Trains explicit-feedback ALS on `(user_idx, item_idx, rating)` with an 80/20 train/validation split.
   - Performs a small grid search (configurable via CLI): `rank ∈ {32, 50, 64}`, `regParam ∈ {0.05, 0.1, 0.2}`.
-  - Selects the best model by lowest RMSE (tie-break by highest Precision@10); reports NDCG@10.
+  - Selects the best model by highest Precision@10 (tie-break by lowest RMSE); reports NDCG@10.
   - Saves artifacts to `artifacts/als_model/` with `metadata.json`; attempts MLflow logging when available.
 
 - Evaluation

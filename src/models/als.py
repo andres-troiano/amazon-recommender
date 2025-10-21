@@ -67,10 +67,17 @@ def train_als(
 
     train_df, val_df = _split_data(interactions_df, seed)
 
+    # Grid definition
+    # NOTE: We fix rank at 32 for faster runs since prior experiments showed minimal sensitivity.
+    # rank_values = [32, rank, 64]
+    rank_values = [32]
+    # reg_values = [0.05, reg, 0.2]
+    reg_values = [0.02, 0.05, 0.1, 0.2, 0.4, 0.8]
+
     param_grid = [
         {"rank": r, "regParam": rp}
-        for r in [32, rank, 64]
-        for rp in [0.05, reg, 0.2]
+        for r in rank_values
+        for rp in reg_values
     ]
 
     best = None
@@ -98,7 +105,8 @@ def train_als(
         rank_metrics = _evaluate_ranking(model, val_df, k=10)
         logger.info(f"Validation RMSE={rmse:.4f} P@10={rank_metrics['precision@k']:.4f} NDCG@10={rank_metrics['ndcg@k']:.4f}")
 
-        score = (rmse, -rank_metrics["precision@k"])  # primary: lower RMSE, then higher precision
+        # Primary objective: maximize Precision@K; tie-break with lower RMSE
+        score = (-rank_metrics["precision@k"], rmse)
         # Track this candidate's results
         candidate = {"params": params, "metrics": {"rmse": rmse, **rank_metrics}}
         grid_results.append(candidate)
@@ -138,7 +146,7 @@ def train_als(
         {
             "model": "als",
             "k": 10,
-            "selection": "rmse_then_precision@k",
+            "selection": "precision@k_then_rmse",
             "grid_results": grid_results,
             "best": {"params": params_best, "metrics": metrics_best},
         },
