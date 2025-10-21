@@ -202,5 +202,78 @@ Key variables (with defaults):
 3. Serving API with FastAPI + Docker
 4. Optional Streamlit/Gradio demo and cold-start strategies
 
+## Results
+
+Two rounds of experiments were conducted to analyze how the Alternating Least Squares (ALS) model behaves under different hyperparameter settings on the Amazon Electronics dataset. Each experiment measured RMSE, Precision@10, and NDCG@10 on a held-out validation split.
+
+### Round 1 — Rank × Regularization Grid Search
+
+The first experiment explored a small 3×3 grid over latent factor dimension (`rank`) and regularization strength (`regParam`), optimizing primarily for RMSE and secondarily for Precision@10.
+
+| rank | regParam | RMSE ↓   | Precision@10 ↑ | NDCG@10 ↑  |
+| ---- | -------- | -------- | -------------- | ---------- |
+| 32   | 0.05     | 1.54     | 0.7979         | 0.8593     |
+| 32   | 0.10     | 1.35     | 0.7980         | 0.8625     |
+| 32   | 0.20     | 1.27     | 0.7980         | 0.8644     |
+| 50   | 0.05     | 1.46     | 0.7979         | 0.8602     |
+| 50   | 0.10     | 1.33     | 0.7980         | 0.8633     |
+| 50   | 0.20     | 1.27     | 0.7981         | 0.8649     |
+| 64   | 0.05     | 1.44     | 0.7979         | 0.8604     |
+| 64   | 0.10     | 1.32     | 0.7980         | 0.8635     |
+| 64   | 0.20     | **1.27** | **0.7981**     | **0.8652** |
+
+**Findings**
+
+* RMSE improved steadily as `regParam` increased from 0.05 → 0.20, suggesting that stronger regularization reduces overfitting.
+* Ranking metrics (Precision@10, NDCG@10) remained almost constant (~0.798 / 0.865), indicating model robustness to `rank` and regularization changes.
+* Increasing `rank` (from 32 → 64) provided minimal gain, implying diminishing returns in latent dimensionality for this dataset.
+
+Since `rank` had negligible impact while `regParam` showed clear trends, I fixed `rank = 32` and ran a focused sweep over regularization strength in the next round.
+
+<p align="center">
+  <img src="docs/results_grid_round1_1.png" width="500"/>
+</p>
+
+<p align="center">
+  <img src="docs/results_grid_round1_2.png" width="500"/>
+</p>
+
+<p align="center">
+  <img src="docs/results_grid_round1_3.png" width="500"/>
+</p>
+
+
+### Round 2 — Regularization Sweep (Precision@K–first selection)
+
+The second experiment fixed `rank = 32` and varied `regParam` ∈ {0.02, 0.05, 0.1, 0.2, 0.4, 0.8}, this time prioritizing Precision@10 as the main optimization target (tie-breaking on RMSE).
+
+| regParam | RMSE ↓   | Precision@10 ↑ | NDCG@10 ↑  |
+| -------- | -------- | -------------- | ---------- |
+| 0.02     | 2.07     | 0.7978         | 0.8562     |
+| 0.05     | 1.54     | 0.7979         | 0.8593     |
+| 0.10     | 1.35     | 0.7980         | 0.8625     |
+| 0.20     | 1.27     | 0.7980         | 0.8644     |
+| 0.40     | **1.25** | 0.7981         | 0.8660     |
+| 0.80     | 1.37     | **0.7981**     | **0.8662** |
+
+**Findings**
+
+* RMSE decreased sharply up to `regParam ≈ 0.4`, then rose slightly at `0.8`, confirming the expected bias–variance trade-off.
+* Ranking metrics remained stable across all values, suggesting the model’s top-K performance is largely insensitive to small changes in regularization.
+* The best configuration by Precision@10 was `regParam = 0.8` (RMSE = 1.37, Precision@10 = 0.7981, NDCG@10 = 0.8662), though 0.2–0.4 offered nearly identical performance with lower bias.
+
+<p align="center">
+  <img src="docs/results_grid_round2.png" width="500"/><br/>
+  <em>Round 2: Effect of regularization on RMSE and ranking metrics (rank fixed at 32).</em>
+</p>
+
+
+### Interpretation
+
+The ALS recommender achieves consistent ranking performance across a wide range of configurations, with RMSE improving as regularization increases up to moderate levels.
+For practical purposes, **`rank = 32` and `regParam ≈ 0.2–0.4`** provide an excellent balance between generalization and computational cost.
+These results establish a solid baseline to compare future models, such as neural collaborative filtering, within the same experimental framework.
+
+
 ## License
 This project is for educational and portfolio demonstration purposes.
