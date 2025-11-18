@@ -76,6 +76,7 @@ python src/pipeline.py --help
 python src/pipeline.py etl [--input PATH] [--min-interactions N]
 python src/pipeline.py train
 python src/pipeline.py train_als [--rank 50 --reg 0.1 --alpha 1.0 --maxiter 10 --sample-fraction 0.2 --sample-seed 42]
+python src/pipeline.py serve_api [--host 0.0.0.0 --port 8000]
 python src/pipeline.py eval
 python src/pipeline.py deploy
 ```
@@ -109,6 +110,24 @@ Notes:
 - Tracking URI defaults to `file:./mlruns` unless overridden via `MLFLOW_TRACKING_URI`.
 - Experiment name: `ALS_Recommender`.
 - Each grid candidate is a nested run; the best run is tagged `best=true` and logs artifacts.
+
+### Serving API (FastAPI)
+
+Run locally:
+```bash
+python src/pipeline.py serve_api --host 0.0.0.0 --port 8000
+# Open http://localhost:8000/docs for interactive docs
+```
+
+Endpoints:
+- `GET /recommendations?user_id=U&n=10` → top-N personalized items
+- `GET /similar-items?item_id=I&n=5` → top-N similar items (ALS item-factor cosine)
+- `POST /feedback` → logs a JSON payload to `artifacts/feedback.jsonl`
+
+Cold-start behavior:
+- Known user → ALS personalized recs
+- Unknown but demo profile → falls back to interest/popularity (popularity available now)
+- Unknown user → top popular items (`data/processed/popular_items.parquet`)
 
 ### ETL
 
@@ -176,8 +195,8 @@ Note: Plotting uses matplotlib/seaborn; functions sample data to keep visuals re
 - Evaluation
   - Offline metrics: RMSE, Precision@K, NDCG@K used to select/compare models.
 
-- Serving (upcoming)
-  - FastAPI-based API to serve recommendations; integrates with saved ALS artifacts and cold-start logic.
+- Serving (FastAPI)
+  - Exposes `/recommendations`, `/similar-items`, and `/feedback`; integrates with saved ALS artifacts and popularity-based cold-start logic.
 
 - EDA utilities
   - Importable helpers in `src/eda/` and example notebook `notebooks/01_data_overview.ipynb` for quick stats and plots.

@@ -1,0 +1,16 @@
+{
+	"user_001": {
+		"name": "Alice – Audiophile",
+		"interests": ["headphones", "speakers", "music"],
+		"description": "Enjoys high-end audio gear."
+	},
+	"user_002": {
+		"name": "Bob – Bookworm",
+		"interests": ["fiction", "mystery", "self-help"],
+		"description": "Avid reader across genres."
+	},
+	"user_003": {
+		"name": "Charlie – Gamer",
+		"interests": ["console", "controller", "gaming headset"]
+	}
+}

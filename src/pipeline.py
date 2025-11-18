@@ -16,6 +16,7 @@ from utils.data import download_file
 from etl.spark_preprocess import preprocess_reviews
 from etl.feature_engineering import compute_popularity, save_popularity
 from models.als import train_als
+import uvicorn
 
 
 def _handle_etl(_: argparse.Namespace) -> int:
@@ -84,6 +85,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     train_als_parser.set_defaults(func=_handle_train)
 
+    serve_parser = subparsers.add_parser("serve_api", help="Run FastAPI serving layer")
+    serve_parser.add_argument("--host", type=str, default="0.0.0.0")
+    serve_parser.add_argument("--port", type=int, default=8000)
+    serve_parser.set_defaults(func=_handle_deploy)
     eval_parser = subparsers.add_parser("eval", help="Evaluate trained models")
     eval_parser.set_defaults(func=_handle_eval)
 
@@ -165,6 +170,24 @@ def main(argv: list[str] | None = None) -> int:
         finally:
             spark.stop()
 
+        return 0
+    if args.command == "serve_api":
+        logger.info("Starting serving API on FastAPI (http://localhost:8000/docs)")
+        # Import the app object with fallbacks for both invocation styles:
+        # - `python -m src.pipeline serve_api` (package import works)
+        # - `python src/pipeline.py serve_api` (use local module import)
+        try:
+            from src.serving.api import app as fastapi_app  # type: ignore
+        except ModuleNotFoundError:
+            try:
+                from serving.api import app as fastapi_app  # type: ignore
+            except ModuleNotFoundError:
+                import sys as _sys
+                from pathlib import Path as _Path
+                # Ensure project root on sys.path so `src` is importable
+                _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
+                from src.serving.api import app as fastapi_app  # type: ignore
+        uvicorn.run(fastapi_app, host=args.host, port=args.port, reload=False)
         return 0
 
     return args.func(args)
