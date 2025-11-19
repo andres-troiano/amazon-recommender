@@ -105,13 +105,17 @@ class RecommenderService:
 			users_df = spark.createDataFrame([(int(user_idx),)], ["user_idx"])
 			recs = self.als_model.recommendForUserSubset(users_df, n).select("recommendations").first()
 			if recs and recs[0]:
+				logger.info(f"Serving personalized (ALS) recommendations for user_id={user_id} (user_idx={user_idx}), n={n}")
 				items: List[Dict] = []
 				for item_idx, score in recs[0]:
 					item_id = self.item_idx_to_id.get(int(item_idx), str(item_idx)) if self.item_idx_to_id else str(item_idx)
 					items.append({"item_id": item_id, "score": float(score)})
 				return items
+			else:
+				logger.info(f"ALS produced no recommendations for user_id={user_id} (user_idx={user_idx}); falling back to popularity.")
 
 		# cold start / fallback: popularity
+		logger.info(f"Serving popularity fallback for user_id={user_id}, n={n}")
 		return recommend_from_popularity(self.popular_items, n)
 
 	def similar_items(self, item_id: str, n: int = 5) -> List[Dict]:
@@ -123,14 +127,15 @@ class RecommenderService:
 		# Build reverse map id->idx
 		id_to_idx = {v: k for k, v in self.item_idx_to_id.items()}
 		if item_id not in id_to_idx:
-			logger.warning(f"Item {item_id} not found; falling back to popularity.")
+			logger.info(f"Item {item_id} not found in index; falling back to popularity.")
 			return recommend_from_popularity(self.popular_items, n)
 		target_idx = id_to_idx[item_id]
 		target_vec = self.item_idx_to_vec.get(target_idx)
 		if target_vec is None:
-			logger.warning(f"Item vector for idx {target_idx} missing; falling back to popularity.")
+			logger.info(f"Item vector for idx {target_idx} missing; falling back to popularity.")
 			return recommend_from_popularity(self.popular_items, n)
 		# Compute cosine similarity
+		logger.info(f"Serving similar-items using ALS item factors for item_id={item_id}, n={n}")
 		scores: List[Tuple[str, float]] = []
 		for idx, vec in self.item_idx_to_vec.items():
 			if idx == target_idx:

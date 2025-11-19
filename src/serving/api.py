@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Query
 from loguru import logger
 
 from src.utils.logging import setup_logging
